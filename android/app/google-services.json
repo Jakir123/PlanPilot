@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "611039308210",
+    "project_id": "planpilot-5ab36",
+    "storage_bucket": "planpilot-5ab36.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:611039308210:android:8a60c14f2632586ba41cab",
+        "android_client_info": {
+          "package_name": "com.naasbd.plan_pilot"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAsBp84bCpkDmSYnw63iuVEeG7c5s1uihQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
