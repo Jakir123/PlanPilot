@@ -5,18 +5,6 @@ class FirebaseService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<void> updateTodoCompleteStatus({
-    required String userId,
-    required String docId,
-    required bool isCompleted,
-    required bool isAnonymous,
-  }) async {
-    final ref = isAnonymous
-        ? _firestore.collection('anonymous').doc(userId).collection('todos').doc(docId)
-        : _firestore.collection('users').doc(userId).collection('todos').doc(docId);
-    await ref.update({'isCompleted': isCompleted});
-  }
-
   // Sign in anonymously
   Future<User?> signInAnonymously() async {
     final result = await _auth.signInAnonymously();
@@ -53,6 +41,19 @@ class FirebaseService {
     await col.add(todo);
   }
 
+  // Update todos
+  Future<void> updateTodo({
+      required String userId,
+      required String docId,
+      required Map<String, dynamic> todo,
+      bool isAnonymous = false
+  }) async {
+    final col = isAnonymous
+        ? _firestore.collection('anonymous').doc(userId).collection('todos')
+        : _firestore.collection('users').doc(userId).collection('todos');
+    await col.doc(docId).update(todo);
+  }
+
   // Migrate todos from anonymous to user
   Future<void> migrateTodos(String anonId, String userId) async {
     final anonTodoSnap = await _firestore.collection('anonymous').doc(anonId).collection('todos').get();
@@ -74,6 +75,19 @@ class FirebaseService {
         : _firestore.collection('users').doc(userId).collection('todos').doc(docId);
     await ref.delete();
   }
+
+  Future<void> updateTodoCompleteStatus({
+    required String userId,
+    required String docId,
+    required bool isCompleted,
+    required bool isAnonymous,
+  }) async {
+    final ref = isAnonymous
+        ? _firestore.collection('anonymous').doc(userId).collection('todos').doc(docId)
+        : _firestore.collection('users').doc(userId).collection('todos').doc(docId);
+    await ref.update({'isCompleted': isCompleted});
+  }
+
 
   // Update priority state
   Future<void> updatePriority({
