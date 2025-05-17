@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../components/priority_category_tag.dart';
+
+import '../components/todo_list_item.dart';
 import '../todo_edit_viewmodel.dart';
 import 'authentication/auth_viewmodel.dart';
-import '../components/todo_list_item.dart';
 
 class PendingTodos extends StatelessWidget {
   const PendingTodos({super.key});

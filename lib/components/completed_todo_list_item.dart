@@ -7,12 +7,12 @@ import '../todo_edit_viewmodel.dart';
 import '../components/priority_category_tag.dart';
 import '../screens/edit_todo_sheet.dart';
 
-class TodoListItem extends StatelessWidget {
+class CompletedTodoListItem extends StatelessWidget {
   final Map<String, dynamic> todo;
   final String userId;
   final bool isAnonymous;
 
-  const TodoListItem({
+  const CompletedTodoListItem({
     super.key,
     required this.todo,
     required this.userId,
@@ -81,58 +81,6 @@ class TodoListItem extends StatelessWidget {
     );
   }
 
-  Future<void> _showCompletionCelebration(BuildContext context) async {
-    await showModalBottomSheet(
-      context: context,
-      isDismissible: false,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Lottie.asset('assets/animations/congratulations.json', height: 120),
-              const SizedBox(height: 4),
-              const Text(
-                'Great Job!',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'You completed: "${todo['title'] ?? ''}"',
-                style: const TextStyle(fontSize: 16),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () => Navigator.of(context).pop(),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                child: const Text(
-                  'Continue',
-                  style: TextStyle(fontSize: 16,color: Colors.white),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -140,50 +88,10 @@ class TodoListItem extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       child: Slidable(
         key: ValueKey(todo['id']),
-        startActionPane: ActionPane(
-          motion: const DrawerMotion(),
-          extentRatio: 0.30,
-          children: [
-            SlidableAction(
-              onPressed: (_) async {
-                _showCompletionCelebration(context);
-                context.read<TodoEditViewModel>().firebaseService.updateTodoCompleteStatus(
-                  userId: userId,
-                  docId: todo['id'],
-                  isCompleted: true,
-                  isAnonymous: isAnonymous,
-                );
-              },
-              backgroundColor: Colors.green,
-              foregroundColor: Colors.white,
-              icon: Icons.check_circle,
-              label: 'Complete',
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ],
-        ),
         endActionPane: ActionPane(
           motion: const DrawerMotion(),
-          extentRatio: 0.5,
+          extentRatio: 0.25,
           children: [
-            SlidableAction(
-              onPressed: (_) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => EditTodoSheet(
-                    todo: todo,
-                    userId: userId,
-                    isAnonymous: isAnonymous,
-                  )),
-                );
-              },
-              backgroundColor: Colors.blue,
-              foregroundColor: Colors.white,
-              icon: Icons.edit,
-              label: 'Edit',
-              spacing: 4,
-              borderRadius: BorderRadius.circular(8),
-            ),
             SlidableAction(
               onPressed: (_) => _showDeleteConfirmation(context),
               backgroundColor: Colors.red,
@@ -233,7 +141,8 @@ class TodoListItem extends StatelessWidget {
                         child: Row(
                           children: [
                             Text(
-                              DateFormat('EEE d MMM yyyy, hh:mm a').format(DateTime.parse(todo['dueDateTime'])),
+                              DateFormat('EEE d MMM yyyy, hh:mm a')
+                                  .format(DateTime.parse(todo['dueDateTime'])),
                               style: const TextStyle(fontSize: 12),
                             ),
                             const SizedBox(width: 8),

@@ -165,14 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Expanded(
             child: _selectedIndex == 0
                 ? const PendingTodos()
-                : CompletedTodos(
-                    todos: _completedTodos,
-                    onDelete: (index) {
-                      setState(() {
-                        _completedTodos.removeAt(index);
-                      });
-                    },
-                  ),
+                : CompletedTodos(),
           ),
         ],
       )),

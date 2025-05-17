@@ -60,11 +60,13 @@ class _AddTodoSheetState extends State<AddTodoSheet> {
 
   String? _titleError;
   String? _categoryError;
+  String? _dateTimeError;
 
   void _submit(BuildContext context) {
     setState(() {
       _titleError = null;
       _categoryError = null;
+      _dateTimeError = null;
     });
     bool hasError = false;
     if (_titleController.text.trim().isEmpty) {
@@ -79,18 +81,49 @@ class _AddTodoSheetState extends State<AddTodoSheet> {
       });
       hasError = true;
     }
+
+    DateTime? dueDateTime;
+
+    if (_dueDate != null && _dueTime != null) {
+      dueDateTime = DateTime(
+        _dueDate!.year,
+        _dueDate!.month,
+        _dueDate!.day,
+        _dueTime!.hour,
+        _dueTime!.minute,
+      );
+    }else if (_reminder) {
+      if (_dueDate == null && _dueTime != null) {
+        // Only time is set, use current date with selected time
+        final now = DateTime.now();
+        dueDateTime = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          _dueTime!.hour,
+          _dueTime!.minute,
+        );
+      } else if (_dueDate != null && _dueTime == null) {
+        // Only date is set, use current time + 1 hour
+        final now = DateTime.now();
+        dueDateTime = DateTime(
+          _dueDate!.year,
+          _dueDate!.month,
+          _dueDate!.day,
+          now.hour + 1,
+          now.minute,
+        );
+      }else{
+        setState(() {
+          _dateTimeError = 'Select date and time to set a reminder';
+        });
+        hasError = true;
+      }
+    }
+
+
     if (hasError) return;
 
-    final dueDateTime =
-        (_dueDate != null && _dueTime != null)
-            ? DateTime(
-              _dueDate!.year,
-              _dueDate!.month,
-              _dueDate!.day,
-              _dueTime!.hour,
-              _dueTime!.minute,
-            )
-            : null;
     String? categoryToSave;
     if (_selectedCategory == 'Other') {
       final customCat = _categoryController.text.trim();
@@ -206,16 +239,15 @@ class _AddTodoSheetState extends State<AddTodoSheet> {
                           ),
                         ],
                       ),
-                      Row(
-                        children: [
-                          Checkbox(
-                            value: _reminder,
-                            onChanged:
-                                (val) =>
-                                    setState(() => _reminder = val ?? false),
-                          ),
-                          const Text('Set reminder for this task'),
-                        ],
+                      if (_dateTimeError != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4, left: 4),
+                          child: Text(_dateTimeError!, style: const TextStyle(color: Colors.red, fontSize: 12)),
+                        ),
+                      SwitchListTile(
+                        title: const Text('Set reminder for this task'),
+                        value: _reminder,
+                        onChanged: (val) => setState(() => _reminder = val),
                       ),
                       const SizedBox(height: 8),
 
