@@ -33,12 +33,12 @@ class FirebaseService {
     return _auth.currentUser;
   }
 
-  // Save todos
-  Future<void> saveTodo(String userId, Map<String, dynamic> todo, {bool isAnonymous = false}) async {
+  // Save todos and return document reference
+  Future<DocumentReference> saveTodo(String userId, Map<String, dynamic> todo, {bool isAnonymous = false}) async {
     final col = isAnonymous
         ? _firestore.collection('anonymous').doc(userId).collection('todos')
         : _firestore.collection('users').doc(userId).collection('todos');
-    await col.add(todo);
+    return await col.add(todo);
   }
 
   // Update todos

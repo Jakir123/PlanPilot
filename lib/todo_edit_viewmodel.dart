@@ -1,16 +1,40 @@
 import 'package:flutter/material.dart';
 import 'utils/firebase_service.dart';
+import 'utils/notification_service.dart';
+import 'dart:async';
+import 'screens/permission_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class TodoEditViewModel extends ChangeNotifier {
   final FirebaseService _firebaseService = FirebaseService();
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+  Future<void> showPermissionScreen(BuildContext context) async {
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => const PermissionScreen(),
+    );
+  }
   FirebaseService get firebaseService => _firebaseService;
   bool _isLoading = false;
   String? _error;
+  Timer? _notificationTimer;
+
+  @override
+  void dispose() {
+    _notificationTimer?.cancel();
+    super.dispose();
+  }
 
   bool get isLoading => _isLoading;
   String? get error => _error;
 
   Future<bool> updateTodo({
+    required BuildContext context,
     required String docId,
     required String userId,
     required String title,
@@ -34,10 +58,61 @@ class TodoEditViewModel extends ChangeNotifier {
         'category': category ?? '',
         'updatedAt': DateTime.now().toIso8601String(),
       };
+
+      // Cancel existing notification if any
+      await NotificationService.checkAndCancelReminder(context,docId);
+
+      // Schedule new notification if reminder is enabled and dueDateTime is set
+      if (reminder && dueDateTime != null) {
+        final success = await NotificationService.checkAndScheduleReminder(
+          context,
+          title,
+          description ?? '',
+          dueDateTime,
+          docId,
+        );
+        if (!success) {
+          return false;
+        }
+      }
+
       await _firebaseService.updateTodo(
         userId: userId,
         docId: docId,
         todo: todoData,
+        isAnonymous: isAnonymous,
+      );
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      print(_error);
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> deleteTodo({
+    required BuildContext context,
+    required String userId,
+    required String docId,
+    required bool isAnonymous,
+  }) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    try {
+      // Cancel any existing notification first
+      NotificationService.checkAndCancelReminder(
+        context,
+        docId,
+      );
+
+      await firebaseService.deleteTodo(
+        userId: userId,
+        docId: docId,
         isAnonymous: isAnonymous,
       );
       _isLoading = false;
@@ -52,6 +127,7 @@ class TodoEditViewModel extends ChangeNotifier {
   }
 
   Future<bool> addTodo({
+    required BuildContext context,
     required String title,
     String? description,
     DateTime? dueDateTime,
@@ -82,12 +158,32 @@ class TodoEditViewModel extends ChangeNotifier {
         'isCompleted': false,
         'userId': user.uid,
       };
-      await _firebaseService.saveTodo(user.uid, todo, isAnonymous: isAnonymous);
+
+      // Save todo first to get the document ID
+      final docRef = await _firebaseService.saveTodo(user.uid, todo, isAnonymous: isAnonymous);
+      final docId = docRef.id;
+      todo['id'] = docId;
+
+      // If reminder is enabled and dueDateTime is set, schedule notification
+      if (reminder && dueDateTime != null) {
+        final success = await NotificationService.checkAndScheduleReminder(
+          context,
+          title,
+          description ?? '',
+          dueDateTime,
+          docId,
+        );
+        if (!success) {
+          return false;
+        }
+      }
+
       _isLoading = false;
       notifyListeners();
       return true;
     } catch (e) {
       _error = e.toString();
+      print(_error);
       _isLoading = false;
       notifyListeners();
       return false;

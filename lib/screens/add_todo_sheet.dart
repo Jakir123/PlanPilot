@@ -1,4 +1,9 @@
+import 'dart:io';
+
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:plan_pilot/screens/permission_screen.dart';
 import 'package:provider/provider.dart';
 import '../todo_edit_viewmodel.dart';
 import '../components/custom_textfield';
@@ -75,7 +80,8 @@ class _AddTodoSheetState extends State<AddTodoSheet> {
       });
       hasError = true;
     }
-    if (_selectedCategory == 'Other' && _categoryController.text.trim().isEmpty) {
+    if (_selectedCategory == 'Other' &&
+        _categoryController.text.trim().isEmpty) {
       setState(() {
         _categoryError = 'Enter a category';
       });
@@ -92,7 +98,7 @@ class _AddTodoSheetState extends State<AddTodoSheet> {
         _dueTime!.hour,
         _dueTime!.minute,
       );
-    }else if (_reminder) {
+    } else if (_reminder) {
       if (_dueDate == null && _dueTime != null) {
         // Only time is set, use current date with selected time
         final now = DateTime.now();
@@ -113,14 +119,13 @@ class _AddTodoSheetState extends State<AddTodoSheet> {
           now.hour + 1,
           now.minute,
         );
-      }else{
+      } else {
         setState(() {
           _dateTimeError = 'Select date and time to set a reminder';
         });
         hasError = true;
       }
     }
-
 
     if (hasError) return;
 
@@ -134,7 +139,9 @@ class _AddTodoSheetState extends State<AddTodoSheet> {
       categoryToSave = _selectedCategory;
     }
     final vm = Provider.of<TodoEditViewModel>(context, listen: false);
-    vm.addTodo(
+    vm
+        .addTodo(
+          context:context,
           title: _titleController.text.trim(),
           description:
               _descController.text.trim().isEmpty
@@ -148,6 +155,10 @@ class _AddTodoSheetState extends State<AddTodoSheet> {
         .then((success) {
           if (success) {
             Navigator.of(context).pop();
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(vm.error ?? 'Failed to update todo')),
+            );
           }
         });
   }
@@ -182,7 +193,13 @@ class _AddTodoSheetState extends State<AddTodoSheet> {
                       if (_titleError != null)
                         Padding(
                           padding: const EdgeInsets.only(top: 4, left: 4),
-                          child: Text(_titleError!, style: const TextStyle(color: Colors.red, fontSize: 12)),
+                          child: Text(
+                            _titleError!,
+                            style: const TextStyle(
+                              color: Colors.red,
+                              fontSize: 12,
+                            ),
+                          ),
                         ),
                       const SizedBox(height: 16),
                       CustomTextField(
@@ -242,12 +259,45 @@ class _AddTodoSheetState extends State<AddTodoSheet> {
                       if (_dateTimeError != null)
                         Padding(
                           padding: const EdgeInsets.only(top: 4, left: 4),
-                          child: Text(_dateTimeError!, style: const TextStyle(color: Colors.red, fontSize: 12)),
+                          child: Text(
+                            _dateTimeError!,
+                            style: const TextStyle(
+                              color: Colors.red,
+                              fontSize: 12,
+                            ),
+                          ),
                         ),
                       SwitchListTile(
                         title: const Text('Set reminder for this task'),
                         value: _reminder,
-                        onChanged: (val) => setState(() => _reminder = val),
+                        onChanged: (val) async {
+                          if (val) {
+                            // Check permission before allowing reminder
+                            if (Platform.isAndroid) {
+                              final androidInfo = await DeviceInfoPlugin().androidInfo;
+                              final sdkInt = androidInfo.version.sdkInt;
+                              
+                              if (sdkInt >= 31) { // Android 12 and above
+                                final hasPermission = await Permission.scheduleExactAlarm.isGranted;
+                                if (!hasPermission) {
+                                  // Show permission screen
+                                  await showModalBottomSheet(
+                                    context: context,
+                                    isScrollControlled: true,
+                                    shape: const RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                                    ),
+                                    builder: (context) => const PermissionScreen(),
+                                  );
+                                  return;
+                                }
+                              }
+                            }
+                          }
+                          setState(() {
+                            _reminder = val;
+                          });
+                        },
                       ),
                       const SizedBox(height: 8),
 
@@ -255,12 +305,15 @@ class _AddTodoSheetState extends State<AddTodoSheet> {
                         width: double.infinity,
                         child: DropdownButtonFormField<String>(
                           value: _selectedCategory,
-                          items: _categories
-                              .map((cat) => DropdownMenuItem(
-                                    value: cat,
-                                    child: Text(cat),
-                                  ))
-                              .toList(),
+                          items:
+                              _categories
+                                  .map(
+                                    (cat) => DropdownMenuItem(
+                                      value: cat,
+                                      child: Text(cat),
+                                    ),
+                                  )
+                                  .toList(),
                           onChanged: (val) {
                             setState(() {
                               _selectedCategory = val;
@@ -291,7 +344,13 @@ class _AddTodoSheetState extends State<AddTodoSheet> {
                         if (_categoryError != null)
                           Padding(
                             padding: const EdgeInsets.only(top: 4, left: 4),
-                            child: Text(_categoryError!, style: const TextStyle(color: Colors.red, fontSize: 12)),
+                            child: Text(
+                              _categoryError!,
+                              style: const TextStyle(
+                                color: Colors.red,
+                                fontSize: 12,
+                              ),
+                            ),
                           ),
                       ],
                       const SizedBox(height: 24),

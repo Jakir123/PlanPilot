@@ -63,11 +63,21 @@ class TodoListItem extends StatelessWidget {
                       ),
                       onPressed: () async {
                         Navigator.of(context).pop();
-                        await context.read<TodoEditViewModel>().firebaseService.deleteTodo(
+                        final vm = context.read<TodoEditViewModel>();
+                        final success = await vm.deleteTodo(
+                          context: context,
                           userId: userId,
                           docId: todo['id'],
                           isAnonymous: isAnonymous,
                         );
+                        if (!success) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(vm.error ?? 'Failed to delete todo'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
                       },
                       child: const Text('Yes, Delete'),
                     ),

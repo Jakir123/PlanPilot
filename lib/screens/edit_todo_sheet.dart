@@ -178,6 +178,7 @@ class _EditTodoSheetState extends State<EditTodoSheet> {
 
     final vm = Provider.of<TodoEditViewModel>(context, listen: false);
     vm.updateTodo(
+      context: context,
       docId: widget.todo['id'],
       userId: widget.userId,
       title: _titleController.text.trim(),

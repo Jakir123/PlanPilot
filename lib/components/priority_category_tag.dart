@@ -7,12 +7,12 @@ class PriorityTag extends StatelessWidget {
   Color get color {
     switch (priority.toLowerCase()) {
       case 'high':
-        return Colors.redAccent;
+        return Colors.redAccent.shade100;
       case 'medium':
-        return Colors.orangeAccent;
+        return Colors.orangeAccent.shade100;
       case 'low':
       default:
-        return Colors.green;
+        return Colors.green.shade100;
     }
   }
 
