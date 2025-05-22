@@ -42,11 +42,14 @@ dependencies:
   intl: ^0.20.2
   lottie: ^3.3.1
   flutter_slidable: ^4.0.0
-  flutter_local_notifications: ^19.2.0
   timezone: ^0.10.1
   device_info_plus: ^11.4.0
   permission_handler: ^12.0.0+1
   url_launcher: ^6.3.1
+  flutter_local_notifications: ^19.2.1
+  flutter_timezone: ^4.1.0
+  android_intent_plus: ^5.3.0
+  android_alarm_manager_plus: ^4.0.7
 
 dev_dependencies:
   flutter_test:

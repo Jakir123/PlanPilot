@@ -60,11 +60,13 @@ class TodoEditViewModel extends ChangeNotifier {
       };
 
       // Cancel existing notification if any
-      await NotificationService.checkAndCancelReminder(context,docId);
+      if(reminder){
+        await NotificationService.cancelAlarm(docId.hashCode);
+      }
 
       // Schedule new notification if reminder is enabled and dueDateTime is set
       if (reminder && dueDateTime != null) {
-        final success = await NotificationService.checkAndScheduleReminder(
+        final success = await NotificationService.checkAndScheduleReminderUsingAlarmManager(
           context,
           title,
           description ?? '',
@@ -98,6 +100,7 @@ class TodoEditViewModel extends ChangeNotifier {
     required BuildContext context,
     required String userId,
     required String docId,
+    required bool isNotificationEnabled,
     required bool isAnonymous,
   }) async {
     _isLoading = true;
@@ -105,10 +108,11 @@ class TodoEditViewModel extends ChangeNotifier {
     notifyListeners();
     try {
       // Cancel any existing notification first
-      NotificationService.checkAndCancelReminder(
-        context,
-        docId,
-      );
+      if(isNotificationEnabled){
+        NotificationService.cancelAlarm(
+          docId.hashCode,
+        );
+      }
 
       await firebaseService.deleteTodo(
         userId: userId,
@@ -166,7 +170,7 @@ class TodoEditViewModel extends ChangeNotifier {
 
       // If reminder is enabled and dueDateTime is set, schedule notification
       if (reminder && dueDateTime != null) {
-        final success = await NotificationService.checkAndScheduleReminder(
+        final success = await NotificationService.checkAndScheduleReminderUsingAlarmManager(
           context,
           title,
           description ?? '',

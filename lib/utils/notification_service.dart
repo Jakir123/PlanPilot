@@ -1,14 +1,21 @@
 import 'dart:io';
 
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:plan_pilot/utils/session_manager.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
+import 'package:android_intent_plus/android_intent.dart';
 
 import '../screens/permission_screen.dart';
+import 'firebase_service.dart';
 
+@pragma('vm:entry-point')
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
   static const channelId = 'todo_reminders';
@@ -35,7 +42,7 @@ class NotificationService {
         channelId,
         channelName,
         description: channelDescription,
-        importance: Importance.high,
+        importance: Importance.max,
         showBadge: true,
       ),
     );
@@ -92,8 +99,18 @@ class NotificationService {
 
       // Get the local time zone
       final localTimeZone = tz.local;
-      final scheduledTime = tz.TZDateTime.from(dueDateTime, localTimeZone);
+      final location = tz.getLocation(await FlutterTimezone.getLocalTimezone());
+      // Convert dueDateTime to local time zone while preserving the time
+      final scheduledTime = tz.TZDateTime(
+        location,
+        dueDateTime.year,
+        dueDateTime.month,
+        dueDateTime.day,
+        dueDateTime.hour,
+        dueDateTime.minute,
+      );
 
+      print("Scheduled Time: $scheduledTime");
       // Create notification details
       final androidDetails = AndroidNotificationDetails(
         channelId,
@@ -130,7 +147,7 @@ class NotificationService {
         scheduledTime,
         platformChannelSpecifics,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        matchDateTimeComponents: DateTimeComponents.time,
+        matchDateTimeComponents: null,
       );
 
       return true;
@@ -175,10 +192,163 @@ class NotificationService {
       print('Error cancelling notification: $e');
       return false;
     }
-    await _notifications.cancel(id.hashCode);
   }
 
   static Future<void> cancelAllReminders() async {
     await _notifications.cancelAll();
+  }
+
+
+  static Future<void> showNotification(String title, String description, int id) async {
+    const androidDetails = AndroidNotificationDetails(
+      channelId,
+      channelName,
+      channelDescription: channelDescription,
+      importance: Importance.max,
+      priority: Priority.high,
+      showWhen: true,
+      enableVibration: true,
+      playSound: true,
+      visibility: NotificationVisibility.public,
+      enableLights: true,
+      color: const Color(0xFF2196F3),
+      ticker: 'Todo Reminder',
+      groupKey: channelId,
+    );
+
+    const iosDetails = DarwinNotificationDetails();
+
+    const notificationDetails = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+
+    await _notifications.show(
+      id,
+      title,
+      description,
+      notificationDetails,
+    );
+    final docId = await SessionManager.getDocId(id);
+    var user = FirebaseAuth.instance.currentUser;
+    bool isAuthenticated = user != null && !(user.isAnonymous);
+    await FirebaseService().updateTodoReminderStatus(
+      userId: user!.uid,
+      docId: docId,
+      reminder: false,
+      isAnonymous: !isAuthenticated,
+    );
+    removeNotificationInfo(id);
+  }
+
+
+  static Future<bool> checkAndScheduleReminderUsingAlarmManager(
+      BuildContext context,
+      String title,
+      String description,
+      DateTime dueDateTime,
+      String id,
+      ) async {
+    try {
+      // First check exact alarms permission
+      if (!Platform.isAndroid) {
+        return false;
+      }
+
+      final androidInfo = await DeviceInfoPlugin().androidInfo;
+      final sdkInt = androidInfo.version.sdkInt;
+
+      if (sdkInt >= 31) { // Android 12 and above
+        final hasPermission = await Permission.scheduleExactAlarm.isGranted;
+        if (!hasPermission) {
+          await showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+            ),
+            builder: (context) => const PermissionScreen(),
+          );
+          return false;
+        }
+      }
+
+      // Then check notification permission
+      final status = await Permission.notification.status;
+      if (!status.isGranted) {
+        final result = await Permission.notification.request();
+        if (!result.isGranted) {
+          throw Exception('Notification permission is required');
+        }
+      }
+
+      // Get the local time zone
+      final localTimeZone = tz.local;
+      final location = tz.getLocation(await FlutterTimezone.getLocalTimezone());
+      // Convert dueDateTime to local time zone while preserving the time
+      final scheduledTime = tz.TZDateTime(
+        location,
+        dueDateTime.year,
+        dueDateTime.month,
+        dueDateTime.day,
+        dueDateTime.hour,
+        dueDateTime.minute,
+      );
+
+      // Schedule the notification
+      await scheduleAlarm(scheduledTime, title, description,id, id.hashCode);
+
+      return true;
+    } catch (e) {
+      print('Error scheduling notification: $e');
+      return false;
+    }
+  }
+
+  static Future<void> scheduleAlarm(
+      DateTime dateTime,
+      String title,
+      String description,
+      String docId,
+      int alarmId
+      ) async {
+    print("Alarm Time: $dateTime");
+    var status = await AndroidAlarmManager.oneShotAt(
+      dateTime,
+      alarmId,
+      alarmCallback,
+      exact: true,
+      wakeup: true,
+    );
+    if (status) {
+      SessionManager.setDocId(docId, alarmId);
+      SessionManager.setNotificationTitle(title, alarmId);
+      SessionManager.setNotificationDescription(description, alarmId);
+    }
+  }
+
+  @pragma('vm:entry-point')
+  static Future<void> alarmCallback(int id) async {
+    print("Alarm Triggered!");
+    final title = await SessionManager.getNotificationTitle(id);
+    final description = await SessionManager.getNotificationDescription(id);
+    await NotificationService.showNotification(title, description, id);
+
+  }
+
+  static Future<void> cancelAlarm(int id) async {
+    try {
+      final success = await AndroidAlarmManager.cancel(id);
+      print(success ? "Alarm $id cancelled successfully" : "Failed to cancel alarm $id");
+      if (success) {
+        removeNotificationInfo(id);
+      }
+    } catch (e) {
+      print('Error cancelling alarm: $e');
+    }
+  }
+
+  static Future<void> removeNotificationInfo(int id) async {
+    await SessionManager.removeNotification(id);
   }
 }

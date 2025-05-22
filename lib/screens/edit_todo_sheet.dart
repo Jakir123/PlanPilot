@@ -80,7 +80,7 @@ class _EditTodoSheetState extends State<EditTodoSheet> {
     final picked = await showDatePicker(
       context: context,
       initialDate: _dueDate ?? now,
-      firstDate: now,
+      firstDate: _dueDate ?? now,
       lastDate: DateTime(now.year + 5),
     );
     if (picked != null) {

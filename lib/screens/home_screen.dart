@@ -1,17 +1,22 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import '../utils/notification_service.dart';
 import 'add_todo_sheet.dart';
 import 'authentication/auth_viewmodel.dart';
-import 'pending_todos.dart';
 import 'completed_todos.dart';
-import 'authentication/sign_in_screen.dart';
+import 'pending_todos.dart';
 
 class HomeScreen extends StatefulWidget {
   final bool isDark;
   final VoidCallback onThemeToggle;
-  const HomeScreen({super.key, required this.isDark, required this.onThemeToggle});
+  final VoidCallback onSingOut;
+  const HomeScreen({
+    super.key,
+    required this.isDark,
+    required this.onThemeToggle,
+    required this.onSingOut
+  });
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -37,8 +42,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   int _selectedIndex = 0;
-  List<Map<String, dynamic>> _pendingTodos = [];
-  List<Map<String, dynamic>> _completedTodos = [];
 
   void _showLogoutConfirmationSheet(BuildContext context) {
     showModalBottomSheet(
@@ -77,10 +80,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       onPressed: () async {
                         Navigator.of(ctx).pop();
                         await Provider.of<AuthViewModel>(context, listen: false).signOut();
-                        // ignore: use_build_context_synchronously
-                        exit(0);
+                        widget.onSingOut();
+
                       },
-                      child: const Text('Logout'),
+                      child: const Text('Logout', style: TextStyle(color: Colors.white)),
                     ),
                   ),
                 ],
@@ -129,11 +132,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
                 child: GestureDetector(
                   onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => SignInScreen(),
-                      ),
-                    );
+                    // Navigator.of(context).push(
+                    //   MaterialPageRoute(
+                    //     builder: (context) => SignInScreen(),
+                    //   ),
+                    // );
                   },
                   child: Container(
                     width: double.infinity,
@@ -170,11 +173,32 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       )),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
+        onPressed: () async {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => AddTodoSheet()),
           );
+
+          // final now = DateTime.now();
+          // final result = await NotificationService.checkAndScheduleReminder(
+          //   context,
+          //   "Test Notification",
+          //   "This is a test",
+          //   now.add(Duration(minutes: 2)),
+          //   "test_id_001",
+          // );
+          // print('Scheduled? $result');
+
+          // final now = DateTime.now();
+          // now.add(Duration(minutes: 2));
+          // final hour = now.hour;
+          // final minutes = now.minute;
+          // NotificationService.setAlarm(message: "Test Notification", hour: hour, minutes: minutes);
+
+          // await NotificationService.showSimpleNotification();
+
+          // final now = DateTime.now();
+          // NotificationService().scheduleAlarm(now.add(Duration(minutes: 1)),);
         },
         tooltip: 'Add Todo',
         child: const Icon(Icons.add),

@@ -33,7 +33,7 @@ class PriorityTag extends StatelessWidget {
         alignment: Alignment.center,
         child: Text(
           priority[0].toUpperCase() + priority.substring(1),
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
           textAlign: TextAlign.center,
         ),
       ),
@@ -51,7 +51,7 @@ class CategoryTag extends StatelessWidget {
       alignment: Alignment.topRight,
       child: Container(
         decoration: const BoxDecoration(
-          color: Color(0xFF3F51B5),
+          color: Color(0xFF5266C8),
           borderRadius: BorderRadius.only(
             topRight: Radius.circular(8),
             bottomLeft: Radius.circular(8),

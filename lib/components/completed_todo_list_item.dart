@@ -68,6 +68,7 @@ class CompletedTodoListItem extends StatelessWidget {
                           context: context,
                           userId: userId,
                           docId: todo['id'],
+                          isNotificationEnabled: todo['reminder'],
                           isAnonymous: isAnonymous,
                         );
                         if (!success) {

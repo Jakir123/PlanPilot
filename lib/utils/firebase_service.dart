@@ -88,6 +88,18 @@ class FirebaseService {
     await ref.update({'isCompleted': isCompleted});
   }
 
+  Future<void> updateTodoReminderStatus({
+    required String userId,
+    required String docId,
+    required bool reminder,
+    required bool isAnonymous,
+  }) async {
+    final ref = isAnonymous
+        ? _firestore.collection('anonymous').doc(userId).collection('todos').doc(docId)
+        : _firestore.collection('users').doc(userId).collection('todos').doc(docId);
+    await ref.update({'reminder': reminder});
+  }
+
 
   // Update priority state
   Future<void> updatePriority({

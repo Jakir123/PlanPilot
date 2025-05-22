@@ -39,4 +39,47 @@ class SessionManager{
     String modeStr = mode == ThemeMode.dark ? 'dark' : 'light';
     await prefs.setString('theme_mode', modeStr);
   }
+
+  // notification info
+  static Future<String> getNotificationTitle(int id) async {
+    final SharedPreferences pref = await SharedPreferences.getInstance();
+    return pref.getString('alarm_${id}_title') ?? "";
+  }
+  static Future<String> getNotificationDescription(int id) async {
+    final SharedPreferences pref = await SharedPreferences.getInstance();
+    return pref.getString('alarm_${id}_description') ?? "";
+  }
+  static Future<void> setNotificationTitle(String title,int id) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('alarm_${id}_title', title);
+  }
+  static Future<void> setNotificationDescription(String description,int id) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('alarm_${id}_description', description);
+  }
+
+  static Future<void> setDocId(String docId,int id) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('alarm_${id}_docId', docId);
+  }
+  static Future<String> getDocId(int id) async {
+    final SharedPreferences pref = await SharedPreferences.getInstance();
+    return pref.getString('alarm_${id}_docId') ?? "";
+  }
+
+  static Future<void> removeNotification(int id) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    var docIdKey = 'alarm_${id}_docId';
+    var titleKey = 'alarm_${id}_title';
+    var descriptionKey = 'alarm_${id}_description';
+    if (prefs.containsKey(titleKey)) {
+      await prefs.remove(titleKey);
+    }
+    if (prefs.containsKey(descriptionKey)) {
+      await prefs.remove(descriptionKey);
+    }
+    if (prefs.containsKey(docIdKey)) {
+      await prefs.remove(docIdKey);
+    }
+  }
 }
