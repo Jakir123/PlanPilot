@@ -10,12 +10,10 @@ import 'pending_todos.dart';
 class HomeScreen extends StatefulWidget {
   final bool isDark;
   final VoidCallback onThemeToggle;
-  final VoidCallback onSingOut;
   const HomeScreen({
     super.key,
     required this.isDark,
     required this.onThemeToggle,
-    required this.onSingOut
   });
 
   @override
@@ -80,7 +78,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       onPressed: () async {
                         Navigator.of(ctx).pop();
                         await Provider.of<AuthViewModel>(context, listen: false).signOut();
-                        widget.onSingOut();
 
                       },
                       child: const Text('Logout', style: TextStyle(color: Colors.white)),

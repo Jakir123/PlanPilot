@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:plan_pilot/screens/authentication/auth_screen.dart';
 import 'package:plan_pilot/screens/authentication/sign_in_screen.dart';
 import 'package:plan_pilot/todo_edit_viewmodel.dart';
 import 'package:plan_pilot/utils/notification_service.dart';
@@ -56,6 +57,13 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     _initApp();
+
+    // Listen to auth changes
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      setState(() {
+        _isLoggedIn = user != null && !user.isAnonymous;
+      });
+    });
   }
 
   Future<void> _initApp() async {
@@ -81,18 +89,6 @@ class _MyAppState extends State<MyApp> {
     await SessionManager.setOnboardingCompleted(true);
     setState(() {
       _onboardingCompleted = true;
-    });
-  }
-
-  void signIn() async{
-    setState(() {
-      _isLoggedIn = true;
-    });
-  }
-
-  void signOut() async{
-    setState(() {
-      _isLoggedIn = false;
     });
   }
 
@@ -135,8 +131,7 @@ class _MyAppState extends State<MyApp> {
 
             // Check authentication status
             if (!_isLoggedIn) {
-              return SignInScreen(
-                onSignIn: signIn,
+              return AuthScreen(
                 isDark: isDark,
               );
             }
@@ -144,7 +139,6 @@ class _MyAppState extends State<MyApp> {
             return HomeScreen(
               isDark: isDark,
               onThemeToggle: toggleTheme,
-              onSingOut: signOut
             );
           },
         ),

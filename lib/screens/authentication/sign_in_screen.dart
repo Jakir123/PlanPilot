@@ -5,12 +5,12 @@ import '../../components/custom_textfield';
 import 'auth_viewmodel.dart';
 
 class SignInScreen extends StatefulWidget {
-  final VoidCallback onSignIn;
+  final VoidCallback showSignUp;
   final bool isDark;
 
   const SignInScreen({
     super.key,
-    required this.onSignIn,
+    required this.showSignUp,
     required this.isDark,
   });
 
@@ -151,9 +151,9 @@ class _SignInScreenState extends State<SignInScreen> {
                                 : () async {
                               if (vm.validateLogin()) {
                                 final success = await vm.signIn();
-                                if (success && context.mounted) {
-                                  widget.onSignIn();
-                                }
+                                // if (success && context.mounted) {
+                                //   widget.onSignIn();
+                                // }
                               }
                             },
                             child:
@@ -177,14 +177,7 @@ class _SignInScreenState extends State<SignInScreen> {
                         const Text("Don't have account? "),
                         GestureDetector(
                           onTap: () {
-                            Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                builder: (context) => SignUpScreen(
-                                  onSignIn: widget.onSignIn,
-                                  isDark: widget.isDark,
-                                ),
-                              ),
-                            );
+                            widget.showSignUp();
                           },
                           child: Text(
                             'Sign up.',
@@ -203,4 +196,6 @@ class _SignInScreenState extends State<SignInScreen> {
           ),
     );
   }
+
+
 }

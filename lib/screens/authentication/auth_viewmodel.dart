@@ -14,6 +14,11 @@ class AuthViewModel extends ChangeNotifier {
 
   AuthViewModel(){
     checkAuthStatus();
+    // Listen to auth changes
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      _user = user;
+      notifyListeners();
+    });
   }
 
   Future<void> checkAuthStatus() async {
@@ -89,8 +94,27 @@ class AuthViewModel extends ChangeNotifier {
       }
       notifyListeners();
       return true;
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'email-already-in-use':
+          _authError = 'This email address is already registered.';
+          break;
+        case 'invalid-email':
+          _authError = 'Please enter a valid email address.';
+          break;
+        case 'operation-not-allowed':
+          _authError = 'Email/password accounts are not enabled.';
+          break;
+        case 'weak-password':
+          _authError = 'The password is too weak. Please choose a stronger password.';
+          break;
+        default:
+          _authError = 'Registration failed. Please try again.';
+      }
+      notifyListeners();
+      return false;
     } catch (e) {
-      _authError = e.toString();
+      _authError = 'Registration failed. Please try again.';
       notifyListeners();
       return false;
     } finally {
