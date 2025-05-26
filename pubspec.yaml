@@ -83,6 +83,7 @@ flutter:
     - assets/onboarding/todo_list.svg
     - assets/onboarding/todos.svg
     - assets/animations/
+    - assets/icons/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

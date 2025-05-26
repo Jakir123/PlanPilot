@@ -53,7 +53,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(bottom: 32),
-                    child: FlutterLogo(size: 72), // Replace with your logo if needed
+                    child: Image.asset(
+                      'assets/icons/ic_logo.png',
+                      width: 72,
+                      height: 72,
+                    ),
                   ),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 24),

@@ -54,9 +54,11 @@ class _SignInScreenState extends State<SignInScreen> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(bottom: 32),
-                      child: FlutterLogo(
-                        size: 72,
-                      ), // Replace with your logo if needed
+                      child: Image.asset(
+                        'assets/icons/ic_logo.png',
+                        width: 72,
+                        height: 72,
+                      ), // Custom logo
                     ),
                     Padding(
                       padding: const EdgeInsets.only(bottom: 24),
