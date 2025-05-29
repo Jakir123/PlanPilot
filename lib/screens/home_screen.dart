@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:plan_pilot/screens/todo/completed_todos.dart';
 import 'package:provider/provider.dart';
 
 import '../utils/notification_service.dart';
-import 'add_todo_sheet.dart';
+import 'todo/add_todo_sheet.dart';
 import 'authentication/auth_viewmodel.dart';
-import 'completed_todos.dart';
-import 'pending_todos.dart';
+import 'todo/pending_todos.dart';
 
 class HomeScreen extends StatefulWidget {
   final bool isDark;

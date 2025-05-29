@@ -10,7 +10,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:plan_pilot/screens/authentication/auth_screen.dart';
 import 'package:plan_pilot/screens/authentication/sign_in_screen.dart';
-import 'package:plan_pilot/todo_edit_viewmodel.dart';
+import 'package:plan_pilot/screens/todo/todo_viewmodel.dart';
 import 'package:plan_pilot/utils/notification_service.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'utils/theme.dart';

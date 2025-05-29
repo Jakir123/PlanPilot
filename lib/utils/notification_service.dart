@@ -14,6 +14,7 @@ import 'package:android_intent_plus/android_intent.dart';
 
 import '../screens/permission_screen.dart';
 import 'firebase_service.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 @pragma('vm:entry-point')
 class NotificationService {
@@ -229,16 +230,30 @@ class NotificationService {
       description,
       notificationDetails,
     );
+    try {
     final docId = await SessionManager.getDocId(id);
     var user = FirebaseAuth.instance.currentUser;
-    bool isAuthenticated = user != null && !(user.isAnonymous);
-    await FirebaseService().updateTodoReminderStatus(
-      userId: user!.uid,
-      docId: docId,
-      reminder: false,
-      isAnonymous: !isAuthenticated,
-    );
-    removeNotificationInfo(id);
+    
+    // Only proceed with Firebase operations if user is authenticated
+    if (user != null) {
+      bool isAuthenticated = !user.isAnonymous;
+      try {
+        await FirebaseService().updateTodoReminderStatus(
+          userId: user.uid,
+          docId: docId,
+          reminder: false,
+          isAnonymous: !isAuthenticated,
+        );
+      } catch (e) {
+        print('Error updating Firebase status: $e');
+      }
+    }
+  } catch (e) {
+    print('Error in notification handling: $e');
+  } finally {
+    // Always clean up the notification info
+    await removeNotificationInfo(id);
+  }
   }
 
 
@@ -327,13 +342,28 @@ class NotificationService {
     }
   }
 
+  static Future<void> _initializeFirebase() async {
+    try {
+      // Initialize Firebase for the current isolate if not already done
+      if (Firebase.apps.isEmpty) {
+        await Firebase.initializeApp();
+      }
+    } catch (e) {
+      print('Error initializing Firebase in isolate: $e');
+      rethrow; // Re-throw to handle it in the calling function
+    }
+  }
+
   @pragma('vm:entry-point')
   static Future<void> alarmCallback(int id) async {
     print("Alarm Triggered!");
     final title = await SessionManager.getNotificationTitle(id);
     final description = await SessionManager.getNotificationDescription(id);
+    
+    // Initialize Firebase before showing notification
+    await _initializeFirebase();
+    
     await NotificationService.showNotification(title, description, id);
-
   }
 
   static Future<void> cancelAlarm(int id) async {

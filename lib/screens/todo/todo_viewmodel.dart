@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'utils/firebase_service.dart';
-import 'utils/notification_service.dart';
+import '../../utils/firebase_service.dart';
+import '../../utils/notification_service.dart';
 import 'dart:async';
-import 'screens/permission_screen.dart';
+import '../permission_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class TodoEditViewModel extends ChangeNotifier {

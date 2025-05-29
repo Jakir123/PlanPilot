@@ -3,9 +3,9 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:lottie/lottie.dart';
-import '../todo_edit_viewmodel.dart';
+import '../screens/todo/todo_viewmodel.dart';
 import '../components/priority_category_tag.dart';
-import '../screens/edit_todo_sheet.dart';
+import '../screens/todo/edit_todo_sheet.dart';
 
 class CompletedTodoListItem extends StatelessWidget {
   final Map<String, dynamic> todo;

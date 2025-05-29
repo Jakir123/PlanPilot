@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../components/custom_textfield';
-import '../todo_edit_viewmodel.dart';
+import '../../components/custom_textfield';
+import 'todo_viewmodel.dart';
 
 class EditTodoSheet extends StatefulWidget {
   final Map<String, dynamic> todo;
@@ -135,34 +135,35 @@ class _EditTodoSheetState extends State<EditTodoSheet> {
         _dueTime!.hour,
         _dueTime!.minute,
       );
-    }else if (_reminder) {
+
+      if (dueDateTime.isBefore(DateTime.now()) && _reminder) {
+        setState(() {
+          _dateTimeError = 'Date and time must be in the future';
+        });
+        hasError = true;
+      }
+
+    } else if (_reminder) {
       if (_dueDate == null && _dueTime != null) {
-        // Only time is set, use current date with selected time
-        final now = DateTime.now();
-        dueDateTime = DateTime(
-          now.year,
-          now.month,
-          now.day,
-          _dueTime!.hour,
-          _dueTime!.minute,
-        );
+        setState(() {
+          _dateTimeError = 'Please select date to set a reminder';
+        });
+        hasError = true;
+
       } else if (_dueDate != null && _dueTime == null) {
-        // Only date is set, use current time + 1 hour
-        final now = DateTime.now();
-        dueDateTime = DateTime(
-          _dueDate!.year,
-          _dueDate!.month,
-          _dueDate!.day,
-          now.hour + 1,
-          now.minute,
-        );
-      }else{
+        setState(() {
+          _dateTimeError = 'Please select time to set a reminder';
+        });
+        hasError = true;
+
+      } else {
         setState(() {
           _dateTimeError = 'Select date and time to set a reminder';
         });
         hasError = true;
       }
     }
+
     if (hasError) return;
 
 
