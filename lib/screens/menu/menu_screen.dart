@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:plan_pilot/screens/authentication/auth_viewmodel.dart';
 import 'package:plan_pilot/screens/authentication/change_password_screen.dart';
+import 'package:plan_pilot/screens/onboarding_screen.dart';
 
 class MenuScreen extends StatelessWidget {
   const MenuScreen({Key? key}) : super(key: key);
@@ -105,8 +106,19 @@ class MenuScreen extends StatelessWidget {
                   context,
                   icon: Icons.help_outline,
                   title: 'Help & Support',
-                  onTap: () {
-                    // TODO: Implement help & support
+                  onTap: () async {
+                    // Navigate to onboarding screen
+                    await Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => OnboardingScreen(
+                          onFinish: () {
+                            // When onboarding is finished, pop back to the previous screen
+                            Navigator.of(context).pop();
+                          },
+                          isDark: Theme.of(context).brightness == Brightness.dark,
+                        ),
+                      ),
+                    );
                   },
                 ),
                 _buildMenuItem(
