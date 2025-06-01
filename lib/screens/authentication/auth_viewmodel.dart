@@ -236,6 +236,101 @@ class AuthViewModel extends ChangeNotifier {
     return null;
   }
 
+  // Change password fields
+  String _currentPassword = '';
+  String _newPassword = '';
+  String _confirmNewPassword = '';
+  String? _currentPasswordError;
+  String? _newPasswordError;
+  String? _confirmNewPasswordError;
+  String? _changePasswordError;
+
+  // Getters for change password errors
+  String? get currentPasswordError => _currentPasswordError;
+  String? get newPasswordError => _newPasswordError;
+  String? get confirmNewPasswordError => _confirmNewPasswordError;
+  String? get changePasswordError => _changePasswordError;
+
+  // Setters for change password fields
+  void setCurrentPassword(String value) {
+    _currentPassword = value;
+    _currentPasswordError = null;
+    _changePasswordError = null;
+    notifyListeners();
+  }
+
+  void setNewPassword(String value) {
+    _newPassword = value;
+    _newPasswordError = null;
+    _changePasswordError = null;
+    notifyListeners();
+  }
+
+  void setConfirmNewPassword(String value) {
+    _confirmNewPassword = value;
+    _confirmNewPasswordError = null;
+    _changePasswordError = null;
+    notifyListeners();
+  }
+
+  // Change password method
+  Future<bool> changePassword() async {
+    if (!_validateChangePassword()) return false;
+    
+    setLoading(true);
+    _changePasswordError = null;
+    
+    try {
+      await _firebaseService.changePassword(_currentPassword, _newPassword);
+      // Clear fields on success
+      _currentPassword = '';
+      _newPassword = '';
+      _confirmNewPassword = '';
+      notifyListeners();
+      return true;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'wrong-password') {
+        _currentPasswordError = 'Incorrect current password';
+      } else {
+        _changePasswordError = 'Failed to change password. Please try again.';
+      }
+      notifyListeners();
+      return false;
+    } catch (e) {
+      _changePasswordError = 'An error occurred. Please try again.';
+      notifyListeners();
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  bool _validateChangePassword() {
+    bool isValid = true;
+    
+    if (_currentPassword.isEmpty) {
+      _currentPasswordError = 'Current password is required';
+      isValid = false;
+    }
+    
+    final newPassError = _validatePassword(_newPassword);
+    if (newPassError != null) {
+      _newPasswordError = newPassError;
+      isValid = false;
+    }
+    
+    if (_newPassword != _confirmNewPassword) {
+      _confirmNewPasswordError = 'New passwords do not match';
+      isValid = false;
+    }
+    
+    if (!isValid) {
+      notifyListeners();
+    }
+    
+    return isValid;
+  }
+
   // Confirm password validation
   String? _validateConfirmPassword(String password, String confirmPassword) {
     if (confirmPassword.isEmpty) {

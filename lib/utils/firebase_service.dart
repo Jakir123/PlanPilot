@@ -28,6 +28,21 @@ class FirebaseService {
     await _auth.signOut();
   }
 
+  // Change user password
+  Future<void> changePassword(String currentPassword, String newPassword) async {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('No user is currently signed in');
+    
+    // Re-authenticate user
+    final credential = EmailAuthProvider.credential(
+      email: user.email!,
+      password: currentPassword,
+    );
+    
+    await user.reauthenticateWithCredential(credential);
+    await user.updatePassword(newPassword);
+  }
+
   // Get current user
   User? getCurrentUser() {
     return _auth.currentUser;

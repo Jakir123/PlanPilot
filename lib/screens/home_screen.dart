@@ -6,6 +6,7 @@ import '../utils/notification_service.dart';
 import 'todo/add_todo_sheet.dart';
 import 'authentication/auth_viewmodel.dart';
 import 'todo/pending_todos.dart';
+import 'menu/menu_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final bool isDark;
@@ -163,43 +164,22 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
           Expanded(
-            child: _selectedIndex == 0
-                ? const PendingTodos()
-                : CompletedTodos(),
+            child: _getSelectedScreen(_selectedIndex),
           ),
         ],
       )),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => AddTodoSheet()),
-          );
-
-          // final now = DateTime.now();
-          // final result = await NotificationService.checkAndScheduleReminder(
-          //   context,
-          //   "Test Notification",
-          //   "This is a test",
-          //   now.add(Duration(minutes: 2)),
-          //   "test_id_001",
-          // );
-          // print('Scheduled? $result');
-
-          // final now = DateTime.now();
-          // now.add(Duration(minutes: 2));
-          // final hour = now.hour;
-          // final minutes = now.minute;
-          // NotificationService.setAlarm(message: "Test Notification", hour: hour, minutes: minutes);
-
-          // await NotificationService.showSimpleNotification();
-
-          // final now = DateTime.now();
-          // NotificationService().scheduleAlarm(now.add(Duration(minutes: 1)),);
-        },
-        tooltip: 'Add Todo',
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: _selectedIndex == 2 
+          ? null 
+          : FloatingActionButton(
+              onPressed: () async {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AddTodoSheet()),
+                );
+              },
+              tooltip: 'Add Todo',
+              child: const Icon(Icons.add),
+            ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) {
@@ -216,8 +196,25 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: Icon(Icons.check_circle_outline),
             label: 'Completed',
           ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.menu),
+            label: 'Menu',
+          ),
         ],
       ),
     );
+  }
+
+  Widget _getSelectedScreen(int index) {
+    switch (index) {
+      case 0:
+        return const PendingTodos();
+      case 1:
+        return const CompletedTodos();
+      case 2:
+        return const MenuScreen();
+      default:
+        return const PendingTodos();
+    }
   }
 }

@@ -150,7 +150,7 @@ class _MyAppState extends State<MyApp> {
 /// A port used to communicate from a background isolate to the UI isolate.
 ReceivePort port = ReceivePort();
 
-/// Example app for Espresso plugin.
+
 class AlarmManagerExampleApp extends StatelessWidget {
   const AlarmManagerExampleApp({super.key});
 
