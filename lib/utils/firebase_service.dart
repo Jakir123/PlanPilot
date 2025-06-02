@@ -81,6 +81,21 @@ class FirebaseService {
     return _auth.currentUser?.emailVerified ?? false;
   }
 
+  // Send password reset email
+  Future<void> sendPasswordResetEmail(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        throw FirebaseAuthException(
+          code: 'user-not-found',
+          message: 'No user found with this email address.',
+        );
+      }
+      rethrow;
+    }
+  }
+
 // Add this method to resend verification email
   Future<void> sendVerificationEmail() async {
     final user = _auth.currentUser;

@@ -25,8 +25,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   late final TextEditingController _passwordController;
   late final TextEditingController _confirmPasswordController;
 
-  bool _showEmailVerificationScreen = false;
-
   @override
   void initState() {
     super.initState();
@@ -164,6 +162,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               if (context.mounted) {
                                 if (!success && vm.authError == null) {
                                   _showVerificationBottomSheet();
+                                  _emailController.clear();
+                                  _passwordController.clear();
+                                  _confirmPasswordController.clear();
+                                  vm.setSignUpEmail('');
+                                  vm.setSignUpPassword('');
+                                  vm.setSignUpConfirmPassword('');
                                 }
                               }
                             }

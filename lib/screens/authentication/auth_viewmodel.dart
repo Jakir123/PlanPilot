@@ -6,9 +6,13 @@ class AuthViewModel extends ChangeNotifier {
   final FirebaseService _firebaseService = FirebaseService();
   User? _user;
   String? _authError;
+  String? _resetPasswordError;
+  bool _isResettingPassword = false;
 
   User? get user => _user;
   String? get authError => _authError;
+  String? get resetPasswordError => _resetPasswordError;
+  bool get isResettingPassword => _isResettingPassword;
 
   bool get isAuthenticated => _user != null && !(_user?.isAnonymous ?? true);
 
@@ -154,6 +158,30 @@ class AuthViewModel extends ChangeNotifier {
     await _firebaseService.signOut();
     _user = null;
     notifyListeners();
+  }
+
+  // Reset password methods
+  Future<bool> sendPasswordResetEmail(String email) async {
+    _isResettingPassword = true;
+    _resetPasswordError = null;
+    notifyListeners();
+
+    try {
+      await _firebaseService.sendPasswordResetEmail(email);
+      _isResettingPassword = false;
+      notifyListeners();
+      return true;
+    } on FirebaseAuthException catch (e) {
+      _resetPasswordError = e.message ?? 'Failed to send password reset email';
+      _isResettingPassword = false;
+      notifyListeners();
+      return false;
+    } catch (e) {
+      _resetPasswordError = 'An unexpected error occurred';
+      _isResettingPassword = false;
+      notifyListeners();
+      return false;
+    }
   }
 
   // Loading state for button

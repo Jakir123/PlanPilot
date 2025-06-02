@@ -3,6 +3,7 @@ import 'package:plan_pilot/screens/authentication/sign_up_screen.dart';
 import 'package:provider/provider.dart';
 import '../../components/custom_textfield';
 import 'auth_viewmodel.dart';
+import 'forgot_password_sheet.dart';
 
 class SignInScreen extends StatefulWidget {
   final VoidCallback showSignUp;
@@ -19,6 +20,7 @@ class SignInScreen extends StatefulWidget {
 }
 
 class _SignInScreenState extends State<SignInScreen> {
+  final _formKey = GlobalKey<FormState>();
   bool _obscurePassword = true;
   late final TextEditingController _emailController;
   late final TextEditingController _passwordController;
@@ -35,6 +37,20 @@ class _SignInScreenState extends State<SignInScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void _showForgotPasswordSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => ForgotPasswordSheet(
+        initialEmail: _emailController.text,
+        onBackToSignIn: () {
+          Navigator.pop(context);
+        },
+      ),
+    );
   }
 
   @override
@@ -135,7 +151,6 @@ class _SignInScreenState extends State<SignInScreen> {
                               style: const TextStyle(color: Colors.red),
                             ),
                           ),
-                        const SizedBox(height: 24),
                         if (vm.authError != null)
                           Padding(
                             padding: const EdgeInsets.only(bottom: 12),
@@ -144,6 +159,14 @@ class _SignInScreenState extends State<SignInScreen> {
                               style: const TextStyle(color: Colors.red),
                             ),
                           ),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            onPressed: _showForgotPasswordSheet,
+                            child: const Text('Forgot Password?'),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
                         SizedBox(
                           height: 48,
                           child: ElevatedButton(
@@ -153,9 +176,12 @@ class _SignInScreenState extends State<SignInScreen> {
                                 : () async {
                               if (vm.validateLogin()) {
                                 final success = await vm.signIn();
-                                // if (success && context.mounted) {
-                                //   widget.onSignIn();
-                                // }
+                                if (success && context.mounted) {
+                                  _emailController.clear();
+                                  _passwordController.clear();
+                                  vm.setLoginEmail('');
+                                  vm.setLoginPassword('');
+                                }
                               }
                             },
                             child:
