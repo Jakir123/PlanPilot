@@ -44,7 +44,7 @@ class AuthViewModel extends ChangeNotifier {
     final wasAnonymous = prevUser?.isAnonymous == true;
     final prevAnonUid = prevUser?.uid;
     try {
-      final user = await _firebaseService.signIn(_loginEmail, _loginPassword);
+      final user = await _firebaseService.signInV2(_loginEmail, _loginPassword);
       _user = user;
       // If previous user was anonymous and new user is not anonymous, migrate vocabularies
       if (wasAnonymous && prevAnonUid != null && user != null && !user.isAnonymous) {
@@ -57,6 +57,9 @@ class AuthViewModel extends ChangeNotifier {
         case 'user-not-found':
         case 'wrong-password':
           _authError = 'Invalid email or password.';
+          break;
+        case 'email-not-verified':
+          _authError = 'Please verify your email before signing in. And for verification, check your email.';
           break;
         case 'invalid-email':
           _authError = 'Please enter a valid email address.';
@@ -86,14 +89,19 @@ class AuthViewModel extends ChangeNotifier {
     final wasAnonymous = prevUser?.isAnonymous == true;
     final prevAnonUid = prevUser?.uid;
     try {
-      final user = await _firebaseService.signUp(_signUpEmail, _signUpPassword);
+      final user = await _firebaseService.signUpV2(_signUpEmail, _signUpPassword);
       _user = user;
+
+      // Check if email is verified (it shouldn't be right after signup)
+      final isVerified = await checkEmailVerification();
+
       // If previous user was anonymous and new user is not anonymous, migrate todos
-      if (wasAnonymous && prevAnonUid != null && user != null && !user.isAnonymous) {
+      if (wasAnonymous && prevAnonUid != null && user != null && !user.isAnonymous && isVerified) {
         await _firebaseService.migrateTodos(prevAnonUid, user.uid);
       }
+
       notifyListeners();
-      return true;
+      return isVerified;
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
         case 'email-already-in-use':
@@ -119,6 +127,26 @@ class AuthViewModel extends ChangeNotifier {
       return false;
     } finally {
       setLoading(false);
+    }
+  }
+
+  // Add this method to check verification status
+  Future<bool> checkEmailVerification() async {
+    final isVerified = await _firebaseService.isEmailVerified();
+    if (isVerified) {
+      _authError = null;
+    }
+    notifyListeners();
+    return isVerified;
+  }
+
+  // In auth_viewmodel.dart
+  Future<void> sendVerificationEmail() async {
+    try {
+      await _firebaseService.sendVerificationEmail();
+    } catch (e) {
+      _authError = 'Failed to send verification email';
+      rethrow;
     }
   }
 

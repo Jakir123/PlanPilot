@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -35,19 +37,55 @@ class _MyAppState extends State<MyApp> {
   bool _initialized = false;
   bool _onboardingCompleted = false;
   bool _isLoggedIn = false;
+  late StreamSubscription<User?> _authSubscription;
 
   @override
   void initState() {
     super.initState();
     _initApp();
+    _setupAuthListener();
+  }
 
-    // Listen to auth changes
-    FirebaseAuth.instance.authStateChanges().listen((User? user) {
-      setState(() {
-        _isLoggedIn = user != null && !user.isAnonymous;
-      });
+
+  void _setupAuthListener() {
+    User? _previousUser;
+
+    _authSubscription = FirebaseAuth.instance.userChanges().distinct().listen((User? user) async {
+      // Skip if the user reference hasn't changed
+      if (_previousUser == user) return;
+
+      if (user != null) {
+        // Only reload if the user was previously null or if the email verification status might have changed
+        if (_previousUser == null || _previousUser?.emailVerified != user.emailVerified) {
+          await user.reload();
+          final updatedUser = FirebaseAuth.instance.currentUser;
+          _previousUser = updatedUser;
+
+          if (mounted) {
+            setState(() {
+              _isLoggedIn = updatedUser != null &&
+                  !updatedUser.isAnonymous &&
+                  updatedUser.emailVerified;
+            });
+          }
+        }
+      } else {
+        _previousUser = null;
+        if (mounted) {
+          setState(() {
+            _isLoggedIn = false;
+          });
+        }
+      }
     });
   }
+
+  @override
+  void dispose() {
+    _authSubscription.cancel();
+    super.dispose();
+  }
+
 
   Future<void> _initApp() async {
     final themeMode = await SessionManager.getThemeMode();

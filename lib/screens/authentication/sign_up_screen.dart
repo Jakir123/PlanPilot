@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:plan_pilot/screens/authentication/sign_in_screen.dart';
 import 'package:provider/provider.dart';
+
 import '../../components/custom_textfield';
 import 'auth_viewmodel.dart';
+import 'email_verification_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
   final VoidCallback showSignIn;
@@ -23,6 +24,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   late final TextEditingController _emailController;
   late final TextEditingController _passwordController;
   late final TextEditingController _confirmPasswordController;
+
+  bool _showEmailVerificationScreen = false;
 
   @override
   void initState() {
@@ -158,6 +161,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               // if (success && context.mounted) {
                               //   widget.onSignIn();
                               // }
+                              if (context.mounted) {
+                                if (!success && vm.authError == null) {
+                                  _showVerificationBottomSheet();
+                                }
+                              }
                             }
                           },
                           child: vm.isLoading
@@ -178,7 +186,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       const Text("Already have an account? "),
                       GestureDetector(
                         onTap: () {
-                           widget.showSignIn();
+                          widget.showSignIn();
                         },
                         child: Text(
                           'Sign in.',
@@ -194,7 +202,25 @@ class _SignUpScreenState extends State<SignUpScreen> {
               ),
             ),
           ),
-        ),
+    ));
+  }
+  // Add this method in your _SignUpScreenState class
+  void _showVerificationBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => EmailVerificationSheet(
+        email: _emailController.text.trim(),
+        onVerificationComplete: () {
+          Navigator.of(context).pop(); // Close the bottom sheet
+          widget.showSignIn(); // Proceed to sign in
+        },
+        onBackToSignIn: () {
+          Navigator.of(context).pop(); // Close the bottom sheet
+          widget.showSignIn(); // Go back to sign in
+        },
+      ),
     );
   }
 }

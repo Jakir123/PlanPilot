@@ -23,6 +23,74 @@ class FirebaseService {
     return result.user;
   }
 
+  // Sign up with email and password
+  Future<User?> signUpV2(String email, String password) async {
+    try {
+      // Create user
+      final userCredential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      // Send verification email
+      await userCredential.user?.sendEmailVerification();
+
+      return userCredential.user;
+    } catch (e) {
+      // Rethrow the error to be handled by the UI layer
+      rethrow;
+    }
+  }
+
+// Sign in with email and password
+  Future<User?> signInV2(String email, String password) async {
+    try {
+      final userCredential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      // Check if email is verified
+      if (userCredential.user != null && !userCredential.user!.emailVerified) {
+        // Sign out the user if email is not verified
+        await signOut();
+        throw FirebaseAuthException(
+          code: 'email-not-verified',
+          message: 'Please verify your email before signing in.',
+        );
+      }
+
+      return userCredential.user;
+    } on FirebaseAuthException catch (e) {
+      // Handle specific Firebase Auth errors
+      if (e.code == 'user-not-found' || e.code == 'wrong-password') {
+        throw FirebaseAuthException(
+          code: e.code,
+          message: 'Invalid email or password.',
+        );
+      }
+      rethrow;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+// Add this helper method to check email verification status
+  Future<bool> isEmailVerified() async {
+    await _auth.currentUser?.reload();
+    return _auth.currentUser?.emailVerified ?? false;
+  }
+
+// Add this method to resend verification email
+  Future<void> sendVerificationEmail() async {
+    final user = _auth.currentUser;
+    if (user != null && !user.emailVerified) {
+      await user.sendEmailVerification();
+    } else {
+      throw Exception('No unverified user found');
+    }
+  }
+
   // Sign out
   Future<void> signOut() async {
     await _auth.signOut();
