@@ -270,23 +270,23 @@ class NotificationService {
         return false;
       }
 
-      final androidInfo = await DeviceInfoPlugin().androidInfo;
-      final sdkInt = androidInfo.version.sdkInt;
-
-      if (sdkInt >= 31) { // Android 12 and above
-        final hasPermission = await Permission.scheduleExactAlarm.isGranted;
-        if (!hasPermission) {
-          await showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-            ),
-            builder: (context) => const PermissionScreen(),
-          );
-          return false;
-        }
-      }
+      // final androidInfo = await DeviceInfoPlugin().androidInfo;
+      // final sdkInt = androidInfo.version.sdkInt;
+      //
+      // if (sdkInt >= 31) { // Android 12 and above
+      //   final hasPermission = await Permission.scheduleExactAlarm.isGranted;
+      //   if (!hasPermission) {
+      //     await showModalBottomSheet(
+      //       context: context,
+      //       isScrollControlled: true,
+      //       shape: const RoundedRectangleBorder(
+      //         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      //       ),
+      //       builder: (context) => const PermissionScreen(),
+      //     );
+      //     return false;
+      //   }
+      // }
 
       // Then check notification permission
       final status = await Permission.notification.status;
@@ -332,7 +332,7 @@ class NotificationService {
       dateTime,
       alarmId,
       alarmCallback,
-      exact: true,
+      exact: false,
       wakeup: true,
     );
     if (status) {

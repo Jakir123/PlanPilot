@@ -189,6 +189,7 @@ class _AddTodoSheetState extends State<AddTodoSheet> {
                         inputAction: TextInputAction.next,
                         onValueChange: (_) => setState(() {}),
                         isPassword: false,
+                        textCapitalization: TextCapitalization.sentences,
                       ),
                       if (_titleError != null)
                         Padding(
@@ -208,6 +209,7 @@ class _AddTodoSheetState extends State<AddTodoSheet> {
                         inputAction: TextInputAction.next,
                         maxLines: 2,
                         isPassword: false,
+                        textCapitalization: TextCapitalization.sentences,
                       ),
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
@@ -339,6 +341,7 @@ class _AddTodoSheetState extends State<AddTodoSheet> {
                             labelText: 'Add new category',
                             inputAction: TextInputAction.done,
                             isPassword: false,
+                            textCapitalization: TextCapitalization.words,
                           ),
                         ),
                         if (_categoryError != null)

@@ -222,6 +222,7 @@ class _EditTodoSheetState extends State<EditTodoSheet> {
                   inputAction: TextInputAction.next,
                   onValueChange: (_) => setState(() {}),
                   isPassword: false,
+                  textCapitalization: TextCapitalization.sentences,
                 ),
                 if (_titleError != null)
                   Padding(
@@ -235,6 +236,7 @@ class _EditTodoSheetState extends State<EditTodoSheet> {
                   inputAction: TextInputAction.next,
                   maxLines: 2,
                   isPassword: false,
+                  textCapitalization: TextCapitalization.sentences,
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
@@ -320,6 +322,7 @@ class _EditTodoSheetState extends State<EditTodoSheet> {
                       inputAction: TextInputAction.done,
                       onValueChange: (_) => setState(() {}),
                       isPassword: false,
+                      textCapitalization: TextCapitalization.words,
                     ),
                   ),
                 if (_categoryError != null)

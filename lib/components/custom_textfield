@@ -17,12 +17,14 @@ class CustomTextField extends StatelessWidget {
   int? maxLength;
   String? labelText;
   double? textSize;
+  TextCapitalization? textCapitalization;
 
   InputBorder? focusedBorder;
   InputBorder? enabledBorder;
 
   final Function(String value)? onSubmit;
   final Function(String value)? onValueChange;
+
 
   CustomTextField({
     this.hintText,
@@ -43,7 +45,8 @@ class CustomTextField extends StatelessWidget {
     this.textSize,
     this.focusedBorder,
     this.enabledBorder,
-    this.onTap});
+    this.onTap,
+    this.textCapitalization});
 
 
   @override
@@ -105,6 +108,7 @@ class CustomTextField extends StatelessWidget {
       onChanged: onValueChange,
       onSubmitted: onSubmit,
       onTap: onTap,
+      textCapitalization: textCapitalization ?? TextCapitalization.none,
     );
   }
 }
