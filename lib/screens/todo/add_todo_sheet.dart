@@ -272,34 +272,7 @@ class _AddTodoSheetState extends State<AddTodoSheet> {
                       SwitchListTile(
                         title: const Text('Set reminder for this task'),
                         value: _reminder,
-                        onChanged: (val) async {
-                          if (val) {
-                            // Check permission before allowing reminder
-                            if (Platform.isAndroid) {
-                              final androidInfo = await DeviceInfoPlugin().androidInfo;
-                              final sdkInt = androidInfo.version.sdkInt;
-                              
-                              if (sdkInt >= 31) { // Android 12 and above
-                                final hasPermission = await Permission.scheduleExactAlarm.isGranted;
-                                if (!hasPermission) {
-                                  // Show permission screen
-                                  await showModalBottomSheet(
-                                    context: context,
-                                    isScrollControlled: true,
-                                    shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-                                    ),
-                                    builder: (context) => const PermissionScreen(),
-                                  );
-                                  return;
-                                }
-                              }
-                            }
-                          }
-                          setState(() {
-                            _reminder = val;
-                          });
-                        },
+                        onChanged: (val) => setState(() => _reminder = val),
                       ),
                       const SizedBox(height: 8),
 

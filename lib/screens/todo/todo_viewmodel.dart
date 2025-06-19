@@ -9,16 +9,6 @@ class TodoEditViewModel extends ChangeNotifier {
   final FirebaseService _firebaseService = FirebaseService();
   static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-  Future<void> showPermissionScreen(BuildContext context) async {
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (context) => const PermissionScreen(),
-    );
-  }
   FirebaseService get firebaseService => _firebaseService;
   bool _isLoading = false;
   String? _error;
